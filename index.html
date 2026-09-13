@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Adaptive Quiz Engine — Turn-by-turn active-recall quiz generator that turns study materials into adaptive questions with offline heuristic parsing.">
+  <title>Adaptive Quiz Engine — Turn-by-Turn Active Recall</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+
+  <!-- ========================================================================
+       TOP APP HEADER
+       ======================================================================== -->
+  <header class="app-header">
+    <div class="brand-container" id="btn-brand-home" title="Go to Setup">
+      <div class="brand-icon">
+        <!-- Pure SVG Brain / Lightning Icon -->
+        <svg viewBox="0 0 24 24">
+          <path d="M12 2C6.48 2 2 6.48 2 12c0 3.7 2.01 6.94 5 8.65V21c0 .55.45 1 1 1h8c.55 0 1-.45 1-1v-.35c2.99-1.71 5-4.95 5-8.65 0-5.52-4.48-10-10-10zm-1 16h2v-2h-2v2zm1.07-7.75l-.9.92C11.45 11.9 11 12.5 11 14h2v-.5c0-.8.4-1.2 1-1.7l1.1-1.1c.5-.5.9-1.2.9-2.2 0-1.66-1.34-3-3-3-1.3 0-2.4.8-2.8 2l1.9.8c.2-.6.7-1 1.2-1 .7 0 1.2.5 1.2 1.2 0 .5-.2.9-.5 1.25z"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <span class="brand-title">Adaptive Quiz Engine</span>
+        <span class="brand-badge">Active Recall &amp; Heuristic Parser</span>
+      </div>
+    </div>
+
+    <div class="header-controls">
+      <!-- Mistake Bank Button -->
+      <button id="btn-open-mistakes" class="icon-btn" title="View Mistake Bank" aria-label="Mistake Bank">
+        <svg viewBox="0 0 24 24">
+          <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm1-4h-2V7h2v6z"/>
+        </svg>
+        <span>Mistakes</span>
+        <span id="header-mistakes-badge" class="badge-counter" style="display:none;">0</span>
+      </button>
+
+      <!-- Past History Button -->
+      <button id="btn-open-history" class="icon-btn" title="Quiz History &amp; Analytics" aria-label="History">
+        <svg viewBox="0 0 24 24">
+          <path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/>
+        </svg>
+        <span>History</span>
+      </button>
+
+      <!-- Sound Mute Toggle -->
+      <button id="btn-toggle-sound" class="icon-btn" title="Toggle Sound" aria-label="Toggle Sound">
+        <svg id="sound-icon-on" viewBox="0 0 24 24">
+          <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+        </svg>
+        <svg id="sound-icon-off" viewBox="0 0 24 24" style="display:none;">
+          <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
+        </svg>
+      </button>
+
+      <!-- Theme Switcher (Dark / Light) -->
+      <button id="btn-toggle-theme" class="icon-btn" title="Toggle Theme" aria-label="Toggle Theme">
+        <svg id="theme-icon-sun" viewBox="0 0 24 24">
+          <path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0s-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0s-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41l-1.06-1.06zm1.06-10.96c.39-.39.39-1.03 0-1.41s-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM7.05 18.36c.39-.39.39-1.03 0-1.41s-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06z"/>
+        </svg>
+        <svg id="theme-icon-moon" viewBox="0 0 24 24" style="display:none;">
+          <path d="M12.3 2a10 10 0 0 0-.19 20 10 10 0 0 0 8.7-5.06c.33-.58-.09-1.3-.75-1.22A8 8 0 0 1 9.28 4.74c.08-.66-.64-1.08-1.22-.75A9.9 9.9 0 0 0 12.3 2z"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- ========================================================================
+       MAIN APP CONTAINER
+       ======================================================================== -->
+  <main class="main-content">
+
+    <!-- ======================================================================
+         SCREEN 1: SETUP SCREEN
+         ====================================================================== -->
+    <section id="screen-setup" class="screen active">
+      <div class="setup-hero">
+        <h1 class="setup-title">Adaptive Quiz Engine</h1>
+        <p class="setup-subtitle">
+          Feed in notes, lecture slides, or reading passages. Our deterministic active-recall pipeline generates targeted multiple-choice questions with dynamic difficulty calibration.
+        </p>
+      </div>
+
+      <!-- Input Card -->
+      <div class="glass-card">
+        <div class="section-label">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
+          </svg>
+          Step 1: Provide Source Material
+        </div>
+
+        <!-- Mode Toggle Tabs -->
+        <div class="tab-row" role="tablist">
+          <button id="tab-paste" class="tab-btn active" role="tab" aria-selected="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19 2h-4.18C14.4.84 13.3 0 12 0c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm7 18H5V4h2v3h10V4h2v16z"/>
+            </svg>
+            Paste Text
+          </button>
+          <button id="tab-upload" class="tab-btn" role="tab" aria-selected="false">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z"/>
+            </svg>
+            Upload File (.txt, .pdf, .docx, .md)
+          </button>
+        </div>
+
+        <!-- Paste Text Panel -->
+        <div id="panel-paste" class="input-panel active">
+          <div class="textarea-wrapper">
+            <textarea
+              id="source-text"
+              class="source-input"
+              placeholder="Paste raw lecture notes, article excerpts, or textbook paragraphs here (minimum 200 characters)..."
+              spellcheck="false"
+            ></textarea>
+          </div>
+          <div class="char-counter" id="char-counter-container">
+            <span id="char-count-text">0 / 200 min characters</span>
+            <span id="char-validity-status">Needs more text</span>
+          </div>
+
+          <!-- Quick Samples -->
+          <div class="samples-row">
+            <span class="samples-label">Load Sample Material:</span>
+            <button type="button" class="sample-chip" data-sample="biology">Biology: Cellular Respiration</button>
+            <button type="button" class="sample-chip" data-sample="cs">Systems: Virtual Memory &amp; OS</button>
+            <button type="button" class="sample-chip" data-sample="economics">Economics: Inflation &amp; Money</button>
+          </div>
+        </div>
+
+        <!-- File Upload Panel -->
+        <div id="panel-upload" class="input-panel">
+          <div id="dropzone" class="dropzone" tabindex="0" role="button" aria-label="Drop file to upload">
+            <input type="file" id="file-input" accept=".txt,.pdf,.docx,.md" style="display:none;" />
+            <div class="dropzone-icon">
+              <svg viewBox="0 0 24 24">
+                <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/>
+              </svg>
+            </div>
+            <div class="dropzone-title">Drag &amp; drop your study document here</div>
+            <div class="dropzone-desc">or click to browse your files</div>
+            <div class="dropzone-formats">
+              <span class="format-pill">.TXT</span>
+              <span class="format-pill">.PDF</span>
+              <span class="format-pill">.DOCX</span>
+              <span class="format-pill">.MD</span>
+            </div>
+          </div>
+
+          <!-- Mandatory Extracted Text Preview Card -->
+          <div id="preview-card" class="preview-card glass-card" style="display: none;">
+            <div class="preview-header">
+              <span class="preview-title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                </svg>
+                Extracted Text Preview (Mandatory Review)
+              </span>
+              <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+                <button id="btn-confirm-preview" class="btn-secondary" type="button" title="Copy text to paste tab">Use in Paste Tab</button>
+                <button id="btn-generate-from-preview" class="btn-primary" style="width:auto; padding:0.5rem 1.1rem; font-size:0.9rem;" type="button">⚡ Generate Quiz From File</button>
+              </div>
+            </div>
+            <div id="preview-notice-box" class="preview-notice" style="display:none;">
+              <span>⚠️ Some PDF/DOCX formatting may not extract cleanly — review and edit below for optimal quiz questions.</span>
+            </div>
+            <textarea id="preview-text" class="preview-textarea" placeholder="Extracted text will appear here. You can review and edit it before generating the quiz."></textarea>
+            <div class="char-counter">
+              <span id="preview-count-text">0 characters</span>
+              <span id="preview-status-text" style="color:var(--correct); font-weight:600;">✓ Ready to generate quiz</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Configuration Card -->
+      <div class="glass-card">
+        <div class="section-label">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
+          </svg>
+          Step 2: Quiz Parameters
+        </div>
+
+        <div class="config-grid">
+          <!-- Level -->
+          <div class="form-group">
+            <label for="config-level">Level</label>
+            <select id="config-level" required>
+              <option value="High School">High School</option>
+              <option value="Undergraduate" selected>Undergraduate</option>
+              <option value="Postgraduate">Postgraduate</option>
+            </select>
+          </div>
+
+          <!-- Stream -->
+          <div class="form-group">
+            <label for="config-stream">Stream</label>
+            <select id="config-stream" required>
+              <option value="Science" selected>Science</option>
+              <option value="Engineering">Engineering</option>
+              <option value="Humanities">Humanities</option>
+              <option value="Commerce">Commerce</option>
+            </select>
+          </div>
+
+          <!-- Difficulty -->
+          <div class="form-group">
+            <label for="config-difficulty">Starting Difficulty</label>
+            <select id="config-difficulty" required>
+              <option value="Foundational">Foundational</option>
+              <option value="Intermediate" selected>Intermediate</option>
+              <option value="Advanced">Advanced</option>
+            </select>
+          </div>
+
+          <!-- Number of Questions -->
+          <div class="form-group">
+            <label for="config-count">Questions (3 – 10)</label>
+            <input type="number" id="config-count" min="3" max="10" value="5" required />
+          </div>
+
+          <!-- Subject Name -->
+          <div class="form-group" style="grid-column: 1 / -1;">
+            <label for="config-subject">Subject / Course Name</label>
+            <input type="text" id="config-subject" placeholder="e.g. Molecular Biology or Computer Systems" value="Cellular Biology" required />
+          </div>
+        </div>
+      </div>
+
+      <!-- Warning Banner (Dynamic) -->
+      <div id="setup-warning" class="warning-banner" style="display:none;">
+        <span class="warning-icon">⚠️</span>
+        <span id="setup-warning-msg">Source is short — only 3 questions generated.</span>
+      </div>
+
+      <!-- Submit Action -->
+      <button id="btn-start-quiz" class="btn-primary" disabled>
+        <span>Generate &amp; Start Active-Recall Quiz</span>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/>
+        </svg>
+      </button>
+    </section>
+
+    <!-- ======================================================================
+         SCREEN 2: TURN-BY-TURN QUIZ SCREEN
+         ====================================================================== -->
+    <section id="screen-quiz" class="screen">
+      <!-- HUD Header -->
+      <div class="quiz-header-hud">
+        <div class="hud-item">
+          <span>Question</span>
+          <span id="hud-current" style="font-weight:700;">1</span>
+          <span>/</span>
+          <span id="hud-total">5</span>
+        </div>
+        <div class="hud-item hud-score">
+          <span>Score:</span>
+          <span id="hud-score">0</span>
+          <span>/</span>
+          <span id="hud-answered">0</span>
+        </div>
+        <div class="hud-item hud-streak">
+          <span id="hud-streak">🔥 0</span>
+        </div>
+        <div class="hud-item">
+          <button id="btn-hud-sound" class="icon-btn" style="padding: 4px 8px;" title="Toggle Mute">
+            <svg id="hud-sound-icon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Animated Progress Track -->
+      <div class="progress-track" aria-label="Quiz Progress">
+        <div id="progress-fill" class="progress-fill" style="width: 0%;"></div>
+      </div>
+
+      <!-- Tier Bar & Exit -->
+      <div class="tier-bar">
+        <div id="tier-chip" class="tier-chip tier-1">
+          <span id="tier-indicator-dot">●</span>
+          <span id="tier-chip-text">Level 1 · Novice</span>
+        </div>
+        <button id="btn-exit-quiz" class="exit-quiz-btn" type="button" title="Exit to Setup">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+          </svg>
+          <span>Quit Quiz (Esc)</span>
+        </button>
+      </div>
+
+      <!-- Question Card -->
+      <div class="question-card">
+        <div class="question-meta">
+          <span id="question-topic" class="meta-pill">TOPIC</span>
+          <span id="question-difficulty" class="meta-pill">INTERMEDIATE</span>
+        </div>
+
+        <div id="question-stem" class="question-stem">
+          Loading question...
+        </div>
+
+        <!-- 4 Multiple-Choice Options -->
+        <div class="options-grid" id="options-container" role="radiogroup" aria-label="Answer options">
+          <button id="opt-0" class="option-btn" data-index="0">
+            <span class="option-key">A</span>
+            <span class="option-text" id="opt-text-0">Option A</span>
+          </button>
+          <button id="opt-1" class="option-btn" data-index="1">
+            <span class="option-key">B</span>
+            <span class="option-text" id="opt-text-1">Option B</span>
+          </button>
+          <button id="opt-2" class="option-btn" data-index="2">
+            <span class="option-key">C</span>
+            <span class="option-text" id="opt-text-2">Option C</span>
+          </button>
+          <button id="opt-3" class="option-btn" data-index="3">
+            <span class="option-key">D</span>
+            <span class="option-text" id="opt-text-3">Option D</span>
+          </button>
+        </div>
+
+        <div class="keyboard-hints">
+          Press <span class="kbd">1</span> <span class="kbd">2</span> <span class="kbd">3</span> <span class="kbd">4</span> to select &bull; <span class="kbd">Enter</span> for Next
+        </div>
+      </div>
+
+      <!-- Feedback Drawer (Slides in on Answer) -->
+      <div id="feedback-drawer" class="feedback-drawer">
+        <div id="feedback-card" class="feedback-card">
+          <div id="feedback-verdict" class="feedback-verdict">
+            <!-- Dynamically populated: Correct or Wrong -->
+          </div>
+
+          <div class="feedback-section">
+            <div class="feedback-label">Why This Is Correct</div>
+            <div id="feedback-why" class="feedback-body">...</div>
+          </div>
+
+          <div class="feedback-section">
+            <div class="feedback-label">Common Misconception</div>
+            <div id="feedback-misconception" class="feedback-body">...</div>
+          </div>
+
+          <div class="memory-hook-box">
+            <span class="hook-icon">💡</span>
+            <div>
+              <div class="feedback-label" style="color:var(--accent);">Memory Hook / Key Takeaway</div>
+              <div id="feedback-hook" class="hook-text">...</div>
+            </div>
+          </div>
+
+          <div class="quiz-actions-row">
+            <button id="btn-next-question" class="btn-primary" style="width:auto; min-width: 180px;">
+              <span id="btn-next-text">Next Question</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         SCREEN 3: RESULTS & ANALYTICS
+         ====================================================================== -->
+    <section id="screen-results" class="screen">
+      <div class="results-hero">
+        <div class="results-score-circle">
+          <span class="score-big" id="results-score">0/0</span>
+          <span class="score-pct" id="results-pct">0%</span>
+        </div>
+        <h2 class="results-title" id="results-title">Diagnostic Complete!</h2>
+        <p class="results-subtitle" id="results-subtitle">Here is your cognitive active-recall performance profile.</p>
+      </div>
+
+      <!-- Metrics Row -->
+      <div class="metrics-row">
+        <div class="metric-card">
+          <div class="metric-val" id="metric-accuracy" style="color:var(--correct);">0%</div>
+          <div class="metric-label">Accuracy</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-val" id="metric-speed">0.0s</div>
+          <div class="metric-label">Avg Speed</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-val" id="metric-streak" style="color:var(--streak);">0</div>
+          <div class="metric-label">Max Streak</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-val" id="metric-tier" style="color:var(--accent);">Level 1</div>
+          <div class="metric-label">Tier Reached</div>
+        </div>
+      </div>
+
+      <!-- Diagnostic Takeaway Banner -->
+      <div class="diagnostic-banner">
+        <div class="diagnostic-icon">🧠</div>
+        <div class="diagnostic-content">
+          <div class="diagnostic-heading">Diagnostic Takeaway &amp; Mastery Analysis</div>
+          <div class="diagnostic-text" id="diagnostic-takeaway-text">
+            Analyzing your performance signature...
+          </div>
+        </div>
+      </div>
+
+      <!-- Visual Charts Grid (Pure SVG) -->
+      <div class="charts-grid">
+        <!-- Radar Chart -->
+        <div class="chart-card">
+          <div class="chart-title">
+            <span>Cognitive Performance Radar</span>
+            <span style="font-size:0.75rem; color:var(--accent);">5-Axis Normalized</span>
+          </div>
+          <div class="chart-svg-container" id="radar-chart-container">
+            <!-- Pure SVG generated in app.js -->
+          </div>
+        </div>
+
+        <!-- Mastery Progression Chart -->
+        <div class="chart-card">
+          <div class="chart-title">
+            <span>Mastery Progression Curve</span>
+            <span style="font-size:0.75rem; color:var(--accent);">Rating vs. Question</span>
+          </div>
+          <div class="chart-svg-container" id="mastery-chart-container">
+            <!-- Pure SVG generated in app.js -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Mistake Bank Section -->
+      <div id="results-mistakes-section" class="mistake-bank-section" style="display:none;">
+        <div class="mistake-bank-card">
+          <div class="section-label" style="color:var(--wrong);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+            </svg>
+            Missed Concepts Added to Spaced-Recall Mistake Bank
+          </div>
+          <p style="font-size:0.88rem; color:var(--muted); margin-bottom:1rem;">
+            These questions have been saved to your local storage. You can launch a targeted active-recall session focusing solely on these items.
+          </p>
+          <div id="results-mistakes-list" class="modal-list" style="max-height:220px;">
+            <!-- Rendered missed questions -->
+          </div>
+          <button id="btn-practice-mistakes-now" class="btn-secondary" style="border-color:var(--wrong); color:var(--wrong);">
+            Practice Missed Questions Now
+          </button>
+        </div>
+      </div>
+
+      <!-- Per-Question Breakdown List -->
+      <div class="glass-card">
+        <div class="section-label">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/>
+          </svg>
+          Turn-by-Turn Detailed Breakdown
+        </div>
+        <div id="breakdown-list" class="breakdown-list">
+          <!-- Populated in app.js -->
+        </div>
+      </div>
+
+      <!-- Action Buttons Grid -->
+      <div class="results-actions-grid">
+        <button id="btn-retake-quiz" class="btn-primary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+          </svg>
+          Retake Same Quiz
+        </button>
+        <button id="btn-new-quiz" class="btn-secondary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+          </svg>
+          Create New Quiz
+        </button>
+        <button id="btn-export-json" class="btn-secondary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
+          </svg>
+          Export Results JSON
+        </button>
+        <button id="btn-download-html" class="btn-secondary" title="Export printable standalone HTML quiz with answer key">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
+          </svg>
+          Download Quiz (HTML)
+        </button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ========================================================================
+       MODALS
+       ======================================================================== -->
+
+  <!-- Resume Session Modal -->
+  <div id="modal-resume" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-resume-title">
+    <div class="modal-card">
+      <h3 id="modal-resume-title" class="modal-title">In-Progress Quiz Detected</h3>
+      <p class="modal-desc">
+        We found an active session saved in your local storage. Would you like to resume where you left off or start a fresh quiz?
+      </p>
+      <div class="modal-actions">
+        <button id="btn-resume-discard" class="btn-secondary" type="button">Start Fresh</button>
+        <button id="btn-resume-accept" class="btn-primary" style="width:auto;" type="button">Resume Quiz</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mistake Bank Modal -->
+  <div id="modal-mistakes" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-mistakes-title">
+    <div class="modal-card" style="max-width: 600px;">
+      <h3 id="modal-mistakes-title" class="modal-title">Spaced-Recall Mistake Bank</h3>
+      <p class="modal-desc">
+        These questions were previously answered incorrectly. Review or practice them to reinforce your recall.
+      </p>
+      <div id="modal-mistakes-list" class="modal-list">
+        <!-- List of mistake items -->
+      </div>
+      <div class="modal-actions">
+        <button id="btn-clear-mistakes" class="btn-secondary" type="button">Clear All</button>
+        <button id="btn-close-mistakes-modal" class="btn-secondary" type="button">Close</button>
+        <button id="btn-launch-mistakes-quiz" class="btn-primary" style="width:auto;" type="button">Practice Mistakes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- History Modal -->
+  <div id="modal-history" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-history-title">
+    <div class="modal-card" style="max-width: 650px;">
+      <h3 id="modal-history-title" class="modal-title">Quiz History &amp; Attempt Records</h3>
+      <p class="modal-desc">
+        Past completed quiz sessions stored in LocalStorage.
+      </p>
+      <div id="modal-history-list" class="modal-list">
+        <!-- History items -->
+      </div>
+      <div class="modal-actions">
+        <button id="btn-clear-history" class="btn-secondary" type="button">Clear History</button>
+        <button id="btn-close-history-modal" class="btn-primary" style="width:auto;" type="button">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirm Exit Quiz Modal -->
+  <div id="modal-confirm-exit" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-exit-title">
+    <div class="modal-card">
+      <h3 id="modal-exit-title" class="modal-title">Quit In-Progress Quiz?</h3>
+      <p class="modal-desc">
+        Your current progress will be preserved in LocalStorage, but you will return to the setup screen.
+      </p>
+      <div class="modal-actions">
+        <button id="btn-cancel-exit" class="btn-secondary" type="button">Continue Quiz</button>
+        <button id="btn-confirm-exit-quiz" class="btn-primary" style="background:var(--wrong); width:auto;" type="button">Exit to Setup</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+</body>
+</html>
